@@ -1,0 +1,82 @@
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <a href="index.html" class="brand-logo" style="margin-bottom: 20px;">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.5 21.82C12.18 22.06 11.82 22.06 11.5 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.5 2.18C11.82 1.94 12.18 1.94 12.5 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5ZM12 4.15L5.4 7.82L12 11.49L18.6 7.82L12 4.15ZM4.5 9.4L4.5 15.66L11.25 19.42L11.25 13.16L4.5 9.4ZM12.75 19.42L19.5 15.66L19.5 9.4L12.75 13.16L12.75 19.42Z" />
+                    </svg>
+                    Aqua Cargo
+                </a>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">
+                    Fast, Secure & Global Shipment Tracking. We deliver your promises reliably.
+                </p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="index.html#track-section">Track Shipment</a></li>
+                    <li><a href="index.html#services">Our Services</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Prohibited Items</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Info</h4>
+                <ul style="color: var(--text-muted); font-size: 0.9rem;">
+                    <li>support@aquacargo.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2016 Aqua Cargo. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- Support Chat Widget -->
+<div class="chat-widget-container">
+    <div class="chat-btn" id="chat-btn">💬</div>
+    <div class="chat-window" id="chat-window">
+        <div class="chat-header">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="online-dot"></span>
+                <h4>Live Support Assistant</h4>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span
+                    style="font-size: 0.75rem; background: rgba(3,232,164,0.15); color: var(--accent-color); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(3,232,164,0.3);">Online</span>
+                <button id="chat-close-btn"
+                    style="background:transparent; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer; line-height:1; padding:0 4px;"
+                    title="Close">✕</button>
+            </div>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="chat-msg bot fade-in">
+                👋 Welcome to Aqua Cargo Support! You can ask me about your shipment — just type a tracking number like
+                <strong>AC-12345678</strong>, or ask about our services.
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="form-control" id="chat-input" placeholder="Type a tracking number or question..."
+                style="margin-bottom: 0;">
+            <button class="btn btn-primary" id="chat-send" style="padding: 10px 15px;">➤</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Scripts to load components (run within main HTML) -->
+<script>
+    // This script can be invoked to inject header/footer if they are loaded dynamically via fetch.
+    // For simplicity, we'll embed the raw contents into the pages or use fetch in app.js
+</script>

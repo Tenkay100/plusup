@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aqua Cargo - Fast, Secure & Global Shipment Tracking</title>
+    <!-- Meta Descriptions -->
+    <meta name="description"
+        content="Aqua Cargo offers professional, real-time shipment tracking for all your global logistics needs. Track your shipment now.">
+    <!-- Load Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <!-- Load Styles -->
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <style>
+        /* Homepage specific styles */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding-top: 80px;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at right center, rgba(12, 141, 216, 0.1) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+
+        .tracking-widget {
+            background: var(--bg-surface);
+            padding: 30px;
+            border-radius: var(--border-radius-lg);
+            border: var(--glass-border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .tracking-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tracking-input-group input {
+            flex: 1;
+        }
+
+        /* Stats */
+        .home-stats {
+            padding: 60px 0;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.02), transparent);
+            border-top: var(--glass-border);
+            border-bottom: var(--glass-border);
+        }
+
+        .stats-wrap {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-item p {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Interactive Globe background placeholder */
+        .hero-graphics {
+            position: absolute;
+            right: -10%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 0;
+            opacity: 0.5;
+            animation: pulse-glow 8s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            from {
+                transform: translateY(-50%) scale(1);
+                opacity: 0.3;
+            }
+
+            to {
+                transform: translateY(-50%) scale(1.1);
+                opacity: 0.6;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Placeholder for Navbar -->
+    <div id="navbar-container"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-graphics floating-slow"></div>
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="fade-in-up delay-100">Aqua Cargo <br><span class="text-gradient">Global Logistics</span></h1>
+                <p class="fade-in-up delay-200">Fast, Secure & Global Shipment Tracking. Experience the modern logistics
+                    platform designed for reliability.</p>
+
+                <div class="tracking-widget glass-panel fade-in-up delay-300" id="track-section">
+                    <h3 style="margin-bottom: 15px;">Track your shipment</h3>
+                    <form id="hero-track-form" onsubmit="event.preventDefault(); goToTracking();">
+                        <div class="tracking-input-group">
+                            <input type="text" class="form-control" id="hero-tracking-input"
+                                placeholder="Enter tracking number (e.g. AC-12345)" required>
+                            <button type="submit" class="btn btn-primary" style="min-width: 120px;">Track</button>
+
+                        </div>
+                </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="home-stats fade-in-up delay-400">
+        <div class="container stats-wrap">
+            <div class="stat-item">
+                <h3 class="counter" data-target="150">0</h3>
+                <p>Countries Served</p>
+            </div>
+            <div class="stat-item">
+                <h3 class="counter" data-target="99">0</h3>
+                <p>% On-Time Delivery</p>
+            </div>
+            <div class="stat-item">
+                <h3 class="counter" data-target="24">0</h3>
+                <p>Support Channels</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section id="services" style="padding: 100px 0;">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 2.8rem; margin-bottom: 15px;">Our Premium Services</h2>
+            <p
+                style="text-align: center; color: var(--text-muted); font-size: 1.1rem; margin-bottom: 60px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                World-class logistics tailored to your needs, delivered with precision and care.</p>
+            <div class="services-grid">
+                <div class="service-card" onmouseover="this.classList.add('hovered')"
+                    onmouseout="this.classList.remove('hovered')">
+                    <div class="service-img-wrap">
+                        <img src="Air Freight.jpg" alt="Air Freight">
+                        <div class="service-overlay"></div>
+                    </div>
+                    <div class="service-info">
+                        <span class="service-tag">Express</span>
+                        <h3>Air Freight</h3>
+                        <p>Express air shipping for urgent cargo to any global destination. Fast, tracked, and reliable.
+                        </p>
+                        <a href="#" class="service-link">Learn More →</a>
+                    </div>
+                </div>
+                <div class="service-card" onmouseover="this.classList.add('hovered')"
+                    onmouseout="this.classList.remove('hovered')">
+                    <div class="service-img-wrap">
+                        <img src="Ocean Freight.jpg" alt="Ocean Freight">
+                        <div class="service-overlay"></div>
+                    </div>
+                    <div class="service-info">
+                        <span class="service-tag">Cost-Effective</span>
+                        <h3>Ocean Freight</h3>
+                        <p>Cost-effective shipping solutions for heavy and bulk shipments across global sea routes.</p>
+                        <a href="#" class="service-link">Learn More →</a>
+                    </div>
+                </div>
+                <div class="service-card" onmouseover="this.classList.add('hovered')"
+                    onmouseout="this.classList.remove('hovered')">
+                    <div class="service-img-wrap">
+                        <img src="Secure Warehousing.jpg" alt="Secure Warehousing">
+                        <div class="service-overlay"></div>
+                    </div>
+                    <div class="service-info">
+                        <span class="service-tag">Secure</span>
+                        <h3>Secure Warehousing</h3>
+                        <p>State-of-the-art storage facilities with real-time inventory tracking and 24/7 security.</p>
+                        <a href="#" class="service-link">Learn More →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials (Sample Reviews) -->
+    <section style="padding: 80px 0; background: var(--bg-surface);">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 15px;">Customer Reviews</h2>
+
+            <div style="display: flex; overflow-x: auto; gap: 20px; padding-bottom: 20px; snap-type: x mandatory;">
+                <div class="glass-panel" style="min-width: 300px; padding: 30px; scroll-snap-align: start;">
+                    <p style="font-style: italic; margin-bottom: 20px;">"Aqua Cargo is by far the easiest logistics
+                        dashboard I've ever used. The tracking is incredibly accurate."</p>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <img src="james carl.jpg" alt="James Carl"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        <div>
+                            <h4 style="font-size: 1rem;">James Carl</h4>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Verified Customer</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-panel" style="min-width: 300px; padding: 30px; scroll-snap-align: start;">
+                    <p style="font-style: italic; margin-bottom: 20px;">"Their ocean freight times are impressive.
+                        Highly recommended."</p>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <img src="brendajames.jpg" alt="Brenda James"
+                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        <div>
+                            <h4 style="font-size: 1rem;">Brenda James</h4>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);">Verified Customer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Placeholder for Footer -->
+    <div id="footer-container"></div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="scripts/firebase-db.js"></script>
+    <script src="scripts/app.js"></script>
+    <script src="scripts/notifications.js"></script>
+
+    <script>
+        function goToTracking() {
+            const input = document.getElementById('hero-tracking-input').value.trim();
+            if (input) {
+                window.location.href = `track.html?number=${encodeURIComponent(input)}`;
+            }
+        }
+    </script>
+</body>
+
+</html>

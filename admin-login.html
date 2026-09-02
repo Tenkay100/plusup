@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Aqua Cargo</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at top right, rgba(12, 141, 216, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at bottom left, rgba(3, 232, 164, 0.1) 0%, transparent 40%),
+                var(--bg-main);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        .login-logo {
+            justify-content: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .login-logo svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .forgot-pass {
+            display: block;
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: -5px;
+            margin-bottom: 25px;
+        }
+
+        .error-message {
+            color: #ff4d4d;
+            background: rgba(255, 77, 77, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid rgba(255, 77, 77, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="glass-panel login-card fade-in-up">
+        <a href="index.html" class="brand-logo login-logo">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.5 21.82C12.18 22.06 11.82 22.06 11.5 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.5 2.18C11.82 1.94 12.18 1.94 12.5 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5ZM12 4.15L5.4 7.82L12 11.49L18.6 7.82L12 4.15ZM4.5 9.4L4.5 15.66L11.25 19.42L11.25 13.16L4.5 9.4ZM12.75 19.42L19.5 15.66L19.5 9.4L12.75 13.16L12.75 19.42Z" />
+            </svg>
+            Aqua Cargo
+        </a>
+
+        <!-- Tab Switcher -->
+        <div style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+            <button type="button" id="tab-login-btn" class="btn btn-primary" style="flex: 1; padding: 10px;" onclick="switchAuthTab('login')">Log In</button>
+            <button type="button" id="tab-register-btn" class="btn btn-secondary" style="flex: 1; padding: 10px;" onclick="switchAuthTab('register')">Create Account</button>
+        </div>
+
+        <div id="auth-title-container">
+            <h2 id="auth-heading" style="margin-bottom: 5px;">Admin Portal Log In</h2>
+            <p id="auth-subheading" style="color: var(--text-muted); margin-bottom: 20px;">Enter your credentials to access the dashboard</p>
+        </div>
+
+        <div class="error-message" id="error-message"></div>
+
+        <!-- Login Form -->
+        <form id="login-form" autocomplete="off">
+            <div class="form-group" style="text-align: left;">
+                <label class="form-label">Username</label>
+                <input type="text" id="username" class="form-control" placeholder="Enter username" required autocomplete="off" value="">
+            </div>
+            <div class="form-group" style="text-align: left; margin-bottom: 10px;">
+                <label class="form-label">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Enter password" required autocomplete="new-password" value="">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1.1rem; margin-top: 15px; margin-bottom: 20px;">Secure Login</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" autocomplete="off" style="display: none;">
+            <div class="form-group" style="text-align: left;">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="reg-name" class="form-control" placeholder="e.g. John Smith" required autocomplete="off">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label class="form-label">Username</label>
+                <input type="text" id="reg-username" class="form-control" placeholder="Choose a username" required autocomplete="off">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="reg-email" class="form-control" placeholder="client@example.com" required autocomplete="off">
+            </div>
+            <div class="form-group" style="text-align: left; margin-bottom: 10px;">
+                <label class="form-label">Password</label>
+                <input type="password" id="reg-password" class="form-control" placeholder="Create a password" required autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1.1rem; margin-top: 15px; margin-bottom: 20px;">Create My Account</button>
+        </form>
+
+        <a href="index.html" style="display: inline-block; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">← Back to Homepage</a>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="scripts/firebase-db.js"></script>
+    <script>
+        function switchAuthTab(mode) {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const loginBtn = document.getElementById('tab-login-btn');
+            const registerBtn = document.getElementById('tab-register-btn');
+            const heading = document.getElementById('auth-heading');
+            const subheading = document.getElementById('auth-subheading');
+            const err = document.getElementById('error-message');
+
+            err.style.display = 'none';
+
+            if (mode === 'register') {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                loginBtn.className = 'btn btn-secondary';
+                registerBtn.className = 'btn btn-primary';
+                heading.innerText = 'Create New Account';
+                subheading.innerText = 'Sign up to manage your shipments portal';
+            } else {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                loginBtn.className = 'btn btn-primary';
+                registerBtn.className = 'btn btn-secondary';
+                heading.innerText = 'Admin Portal Log In';
+                subheading.innerText = 'Enter your credentials to access the dashboard';
+            }
+        }
+
+        function showError(msg) {
+            const err = document.getElementById('error-message');
+            err.innerText = msg;
+            err.style.display = 'block';
+            const card = document.querySelector('.login-card');
+            card.style.transform = 'translateX(-10px)';
+            setTimeout(() => card.style.transform = 'translateX(10px)', 100);
+            setTimeout(() => card.style.transform = 'translateX(-10px)', 200);
+            setTimeout(() => card.style.transform = 'translateX(0)', 300);
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            try {
+                const authenticatedUser = await window.db.authenticateUser(user, pass);
+                if (authenticatedUser) {
+                    sessionStorage.setItem('aqua_admin_token', 'token-' + authenticatedUser.id);
+                    sessionStorage.setItem('aqua_user_session', JSON.stringify(authenticatedUser));
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    showError('Invalid Username or Password');
+                }
+            } catch (err) {
+                showError(err.message || 'Login failed.');
+            }
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const user = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-password').value;
+
+            try {
+                const newUser = await window.db.registerUser(user, pass, name, email);
+                sessionStorage.setItem('aqua_admin_token', 'token-' + newUser.id);
+                const { password, ...userSession } = newUser;
+                sessionStorage.setItem('aqua_user_session', JSON.stringify(userSession));
+                alert('Account created successfully! Welcome to your shipment portal.');
+                window.location.href = 'admin-dashboard.html';
+            } catch (err) {
+                showError(err.message || 'Registration failed.');
+            }
+        });
+    </script>
+</body>
+
+</html>

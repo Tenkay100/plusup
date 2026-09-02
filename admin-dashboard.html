@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Aqua Cargo Admin</title>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <link rel="stylesheet" href="styles/admin.css">
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+
+<body>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <a href="index.html" class="brand-logo">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M21 16.5C21 16.88 20.79 17.21 20.47 17.38L12.5 21.82C12.18 22.06 11.82 22.06 11.5 21.82L3.53 17.38C3.21 17.21 3 16.88 3 16.5V7.5C3 7.12 3.21 6.79 3.53 6.62L11.5 2.18C11.82 1.94 12.18 1.94 12.5 2.18L20.47 6.62C20.79 6.79 21 7.12 21 7.5V16.5ZM12 4.15L5.4 7.82L12 11.49L18.6 7.82L12 4.15ZM4.5 9.4L4.5 15.66L11.25 19.42L11.25 13.16L4.5 9.4ZM12.75 19.42L19.5 15.66L19.5 9.4L12.75 13.16L12.75 19.42Z" />
+                </svg>
+                Aqua Cargo
+            </a>
+
+            <nav class="admin-nav">
+                <a href="#" class="active"><i>📊</i> Dashboard Overview</a>
+                <a href="#" onclick="openModal('create-shipment-modal')"><i>➕</i> Create New Shipment</a>
+                <a href="#"><i>📦</i> Shipments Management</a>
+                <a href="#"><i>🏢</i> Branches</a>
+                <a href="#"><i>👥</i> Users & Roles</a>
+                <a href="#"><i>⚙️</i> System Settings</a>
+            </nav>
+
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <button class="btn btn-secondary" onclick="logout()" style="width: 100%;">🚪 Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content fade-in">
+            <div class="admin-header">
+                <div class="admin-header-title">
+                    <h2>Admin Dashboard</h2>
+                    <p>Manage all active global shipments</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="btn btn-primary" onclick="openModal('create-shipment-modal')" style="padding: 10px 18px; font-weight: 600;">+ Create Shipment</button>
+                    <div class="admin-user-info">
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">Logged in as:</span>
+                        <strong>Admin</strong>
+                        <div class="admin-avatar">A</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="glass-panel stat-card">
+                    <div class="stat-header">
+                        Total Shipments
+                        <div class="stat-icon">📦</div>
+                    </div>
+                    <div class="stat-value" id="stat-total">0</div>
+                </div>
+                <div class="glass-panel stat-card">
+                    <div class="stat-header">
+                        In Transit
+                        <div class="stat-icon" style="color: var(--secondary-color); background: rgba(247,160,15,0.1);">
+                            🚢</div>
+                    </div>
+                    <div class="stat-value" id="stat-transit">0</div>
+                </div>
+                <div class="glass-panel stat-card">
+                    <div class="stat-header">
+                        Delivered
+                        <div class="stat-icon" style="color: var(--accent-color); background: rgba(3,232,164,0.1);">✅
+                        </div>
+                    </div>
+                    <div class="stat-value" id="stat-delivered">0</div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="table-container fade-in-up delay-100">
+                <div class="table-header">
+                    <h3>Recent Shipments</h3>
+                    <div class="table-actions">
+                        <input type="text" class="form-control" placeholder="Search tracking..." style="width: 250px;">
+                        <button class="btn btn-primary" onclick="openModal('create-shipment-modal')">+ Create Shipment</button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tracking No.</th>
+                            <th>Status</th>
+                            <th>Origin</th>
+                            <th>Destination</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shipments-table-body">
+                        <!-- Populated by JS -->
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px;">
+                                <div class="scan-shimmer"
+                                    style="max-width: 40px; max-height: 40px; margin: 0 auto; border-width: 3px;"></div>
+                                <p style="color: var(--text-muted); margin-top: 10px;">Loading Shipments...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Create Shipment Modal -->
+    <div class="modal" id="create-shipment-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Shipment</h3>
+                <button class="close-btn" onclick="closeModal('create-shipment-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="create-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Tracking Number</label>
+                            <div style="display: flex; gap: 5px;">
+                                <input type="text" id="create-tracking" class="form-control" required readonly>
+                                <button type="button" class="btn btn-secondary" onclick="generateTrackingCode()"
+                                    style="padding: 0 15px;">Gen</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Initial Status</label>
+                            <select id="create-status" class="form-control" required>
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid full" style="margin-top: -10px; margin-bottom: 15px;">
+                        <div class="form-group">
+                            <label class="form-label">Status Description / Subtext (Text Below Status)</label>
+                            <input type="text" id="create-status-text" class="form-control" placeholder="e.g. Package received at customs sorting hub, undergoing clearance.">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Origin Country</label>
+                            <select id="create-origin" class="form-control country-select" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Destination Country</label>
+                            <select id="create-destination" class="form-control country-select" required></select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="form-label">Sender Details</label>
+                            <textarea id="create-sender" class="form-control" rows="2"
+                                placeholder="Name, Address, Phone"></textarea>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="form-label">Receiver Details</label>
+                            <textarea id="create-receiver" class="form-control" rows="2"
+                                placeholder="Name, Address, Phone"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Weight (KG)</label>
+                            <input type="number" step="0.1" id="create-weight" class="form-control" placeholder="0.0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Dimensions</label>
+                            <input type="text" id="create-dimensions" class="form-control" placeholder="LxWxH cm">
+                        </div>
+                    </div>
+
+                    <div class="form-grid full">
+                        <div class="form-group">
+                            <label class="form-label">Estimated Delivery Date</label>
+                            <input type="date" id="create-est-date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Customer/Shipper Name</label>
+                            <input type="text" id="create-customer" class="form-control" placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Receiver Name</label>
+                            <input type="text" id="create-receiver-name" class="form-control" placeholder="Jane Smith">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Receiver Email</label>
+                            <input type="email" id="create-receiver-email" class="form-control"
+                                placeholder="client@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Container Number</label>
+                            <input type="text" id="create-container" class="form-control" placeholder="CONT-123456">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Seal Number</label>
+                            <input type="text" id="create-seal" class="form-control" placeholder="SEAL-98765">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Vessel/Voyage</label>
+                            <input type="text" id="create-vessel" class="form-control"
+                                placeholder="MSC VALERIA / VOY24A">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Freight Charges (USD)</label>
+                            <input type="number" step="0.01" id="create-freight" class="form-control"
+                                placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Payment Terms</label>
+                            <select id="create-payment-terms" class="form-control">
+                                <option value="PREPAID">PREPAID</option>
+                                <option value="COLLECT">COLLECT</option>
+                                <option value="CASH ON CHECK">CASH ON CHECK</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid full"
+                        style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label"
+                                style="display: flex; justify-content: space-between; align-items: center;">
+                                Automated Routing Stops (Every 48h)
+                                <button type="button" class="btn btn-secondary" onclick="addRouteInput()"
+                                    style="padding: 2px 10px; font-size: 0.8rem;">+ Add Stop</button>
+                            </label>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Define
+                                locations the shipment will pass through. The system will automatically advance the
+                                shipment every 48 hours.</p>
+                            <div id="route-inputs-container" style="display: flex; flex-direction: column; gap: 10px;">
+                                <!-- Route inputs will be added here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid full">
+                        <div class="form-group">
+                            <label class="form-label">Package Description</label>
+                            <textarea id="create-package-details" class="form-control" rows="3"
+                                placeholder="Detailed description of the package content..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Terms, Rules & Disclaimer -->
+                    <div style="background: rgba(255, 77, 77, 0.08); border: 1px solid rgba(255, 77, 77, 0.25); border-radius: 8px; padding: 15px; margin-top: 15px; margin-bottom: 20px;">
+                        <h4 style="color: #ff6b6b; font-size: 0.95rem; margin-bottom: 8px;">📜 Terms, Regulations & Limitation of Liability</h4>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin-bottom: 12px;">
+                            <strong>Legal Notice & Disclaimer:</strong> By creating and registering this shipment tracking entry, you confirm that all entered details are accurate, lawful, and legitimate. The platform administrators and service providers shall not be held liable, accountable, or legally responsible for any illegal items, contraband, fraudulent tracking activities, misuse, or damages arising from this shipment entry. The user assumes 100% legal responsibility for the contents, origin, and destination of this shipment.
+                        </div>
+                        <label style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #fff; cursor: pointer;">
+                            <input type="checkbox" id="create-agree-terms" style="width: 18px; height: 18px; accent-color: #03e8a4; cursor: pointer;">
+                            I have read, understood, and agree to all rules, regulations, and liability disclaimers.
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('create-shipment-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitCreateShipment()">Save & Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Status/History Modal -->
+    <div class="modal" id="update-history-modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3>Manage Tracking Updates & History</h3>
+                <button class="close-btn" onclick="closeModal('update-history-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="update-shipment-id">
+                <input type="hidden" id="editing-history-id">
+                <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Tracking Number:</span>
+                    <strong id="update-tracking-display" style="display: block; font-size: 1.1rem; margin-top: 5px;">-</strong>
+                </div>
+
+                <!-- Existing History Records Section -->
+                <div style="margin-bottom: 25px;">
+                    <h4 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--accent-color);">📜 Existing History Updates</h4>
+                    <div id="history-timeline-list" style="max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">Loading history records...</p>
+                    </div>
+                </div>
+
+                <form id="update-form">
+                    <h4 id="update-form-heading" style="font-size: 0.95rem; margin-bottom: 15px; color: #fff;">+ Add New Update</h4>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="update-status" class="form-control" required>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Current Location (City, Country)</label>
+                        <input type="text" id="update-location" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status Description</label>
+                        <textarea id="update-desc" class="form-control" rows="2"
+                            placeholder="e.g. Cleared customs, sorting process started"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Overall Progress (%)</label>
+                        <input type="number" id="update-progress" class="form-control" min="0" max="100"
+                            placeholder="50">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="resetUpdateHistoryForm()">Cancel / Clear</button>
+                <button class="btn btn-primary" id="save-history-btn" onclick="submitUpdateHistory()">Save Update</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Shipment Modal -->
+    <div class="modal" id="edit-shipment-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Shipment Details</h3>
+                <button class="close-btn" onclick="closeModal('edit-shipment-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-form">
+                    <input type="hidden" id="edit-shipment-id">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Tracking Number</label>
+                            <input type="text" id="edit-tracking" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select id="edit-status" class="form-control" required>
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid full" style="margin-top: -10px; margin-bottom: 15px;">
+                        <div class="form-group">
+                            <label class="form-label">Status Description / Subtext (Text Below Status)</label>
+                            <input type="text" id="edit-status-text" class="form-control" placeholder="e.g. Package received at customs sorting hub, undergoing clearance.">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Origin Country</label>
+                            <select id="edit-origin" class="form-control country-select" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Destination Country</label>
+                            <select id="edit-destination" class="form-control country-select" required></select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="form-label">Sender Details</label>
+                            <textarea id="edit-sender" class="form-control" rows="2"
+                                placeholder="Name, Address, Phone"></textarea>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="form-label">Receiver Details</label>
+                            <textarea id="edit-receiver" class="form-control" rows="2"
+                                placeholder="Name, Address, Phone"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Weight (KG)</label>
+                            <input type="number" step="0.1" id="edit-weight" class="form-control" placeholder="0.0">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Dimensions</label>
+                            <input type="text" id="edit-dimensions" class="form-control" placeholder="LxWxH cm">
+                        </div>
+                    </div>
+
+                    <div class="form-grid full">
+                        <div class="form-group">
+                            <label class="form-label">Estimated Delivery Date</label>
+                            <input type="date" id="edit-est-date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Customer/Shipper Name</label>
+                            <input type="text" id="edit-customer" class="form-control" placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Receiver Name</label>
+                            <input type="text" id="edit-receiver-name" class="form-control" placeholder="Jane Smith">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Receiver Email</label>
+                            <input type="email" id="edit-receiver-email" class="form-control"
+                                placeholder="client@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Container Number</label>
+                            <input type="text" id="edit-container" class="form-control" placeholder="CONT-123456">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Seal Number</label>
+                            <input type="text" id="edit-seal" class="form-control" placeholder="SEAL-98765">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Vessel/Voyage</label>
+                            <input type="text" id="edit-vessel" class="form-control"
+                                placeholder="MSC VALERIA / VOY24A">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Freight Charges (USD)</label>
+                            <input type="number" step="0.01" id="edit-freight" class="form-control"
+                                placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Payment Terms</label>
+                            <select id="edit-payment-terms" class="form-control">
+                                <option value="PREPAID">PREPAID</option>
+                                <option value="COLLECT">COLLECT</option>
+                                <option value="CASH ON CHECK">CASH ON CHECK</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid full"
+                        style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label"
+                                style="display: flex; justify-content: space-between; align-items: center;">
+                                Automated Routing Stops (Every 48h)
+                                <button type="button" class="btn btn-secondary" onclick="addEditRouteInput()"
+                                    style="padding: 2px 10px; font-size: 0.8rem;">+ Add Stop</button>
+                            </label>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Define or update locations the shipment will automatically pass through every 48 hours.</p>
+                            <div id="edit-route-inputs-container" style="display: flex; flex-direction: column; gap: 10px;">
+                                <!-- Edit Route inputs will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid full">
+                        <div class="form-group">
+                            <label class="form-label">Package Description</label>
+                            <textarea id="edit-package-details" class="form-control" rows="3"
+                                placeholder="Detailed description of the package content..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('edit-shipment-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="submitEditShipment()">Update Shipment</button>
+            </div>
+    <!-- Users Management Table (Main Admin Only) -->
+    <div class="table-container fade-in-up delay-100" id="users-panel-container" style="display: none; margin-top: 30px;">
+        <div class="table-header">
+            <h3>Registered Sub-Admins & User Accounts</h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Main Admin Access Only</span>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>User ID / Username</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Shipment Quota</th>
+                    <th>Joined Date</th>
+                </tr>
+            </thead>
+            <tbody id="users-table-body">
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading user accounts...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paystack Inline SDK -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+
+    <!-- Payment Gateway Modal -->
+    <div class="modal" id="payment-modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="payment-modal-title">💳 Paystack Payment Required</h3>
+                <button class="close-btn" onclick="closeModal('payment-modal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: rgba(3,232,164,0.1); border: 1px solid rgba(3,232,164,0.3); border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                    <h4 style="color: #03e8a4; margin-bottom: 5px;">📦 Shipment Processing</h4>
+                    <p id="payment-modal-desc" style="font-size: 0.95rem; color: #fff; margin: 0;">
+                        Amount: <strong style="font-size: 1.2rem; color: #03e8a4;">899 GHS</strong> per shipment
+                    </p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
+                        Secure checkout via Paystack (Mobile Money / Cards / Bank Transfer).
+                    </p>
+                </div>
+
+                <form id="payment-form" onsubmit="processPaystackPayment(event)">
+                    <div class="form-group">
+                        <label class="form-label">Email Address for Receipt</label>
+                        <input type="email" id="paystack-email" class="form-control" placeholder="your-email@example.com" required>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary" id="payment-btn-text" style="width: 100%; padding: 14px; font-size: 1.1rem; background: linear-gradient(135deg, #03e8a4, #0c8dd8); border: none;">
+                            💳 Pay GHS 899 with Paystack
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Support Chat Widget -->
+    <div class="chat-widget-container">
+        <div class="chat-btn" id="chat-btn">💬</div>
+        <div class="chat-window" id="chat-window">
+            <div class="chat-header">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="online-dot"></span>
+                    <h4>Live Support Assistant</h4>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span
+                        style="font-size: 0.75rem; background: rgba(3,232,164,0.15); color: var(--accent-color); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(3,232,164,0.3);">Online</span>
+                    <button id="chat-close-btn"
+                        style="background:transparent; border:none; color:var(--text-muted); font-size:1.2rem; cursor:pointer; line-height:1; padding:0 4px;"
+                        title="Close">✕</button>
+                </div>
+            </div>
+            <div class="chat-body" id="chat-body">
+                <div class="chat-msg bot fade-in">
+                    👋 Admin Assistant ready! Ask me about a shipment tracking number (e.g.
+                    <strong>AC-12345678</strong>), services, or dashboard help.
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="form-control" id="chat-input"
+                    placeholder="Type a tracking number or question..." style="margin-bottom: 0;">
+                <button class="btn btn-primary" id="chat-send" style="padding: 10px 15px;">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="scripts/countries.js"></script>
+    <script src="scripts/firebase-db.js"></script>
+    <script src="scripts/app.js"></script>
+    <script src="scripts/admin.js"></script>
+</body>
+
+</html>
